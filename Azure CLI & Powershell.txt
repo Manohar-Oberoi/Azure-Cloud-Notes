@@ -1,0 +1,51 @@
+To reach out to us: support@intellipaat.com
+
+Module 1 Commands:
+
+BASH:
+
+For creating resource group:
+az group create --name new-rg --location southcentralus
+
+az group create -n new'rg -l southcentralus (here the abbreviated naming conventions are used)
+
+To find out the accounts working in portal:
+az account list 
+az account list --output table (to view the output in a tabular format)
+az account list -o table (abbreviated cmd)
+
+To create three resource group under one region using one command:
+az group create -n rg-1 -l westus && az group create -n rg-2 -l westus && az group create -n rg-3 -l westus
+
+To view the resource groups:
+az group list
+az group list -o table (to view in tabular format)
+
+az group list --query "[?location == 'westus']" -o table (to get the list of all the resourcegroups under one region)
+
+To delete all the resource groups at once:
+
+ az group list --query "[?location == 'westus']".name -o tsv | xargs -otl az group delete -n
+
+
+POWERSHELL:
+
+To view all the subscriptions:
+Get-Azsubscription
+
+To create a resource group:
+New-Azresourcegroup -name rg-powershell -location southcentralus
+
+To create 3 resourcegroups under one region using one command:
+New-Azresourcegroup -name rg1 -location westus && New-Azresourcegroup -name rg2 -location westus && New-Azresourcegroup -name rg3 -location westus
+
+To view the resource group created:
+Get-Azresourcegroupget
+Get-Azresourcegroup | Format-Table (to view the output in a tabular format)
+Get-Azresourcegroup -location westus (to view the resource group present under a specific location)
+
+To delete the resource groups:
+
+Get-azresourceGroup -l westus | remove-azresourcegroup (it will ask for confirmation everytime it is deleting a resource group)
+
+Get-azresourceGroup -l westus | remove-azresourcegroup -Force (it will directly delete without asking permission)
