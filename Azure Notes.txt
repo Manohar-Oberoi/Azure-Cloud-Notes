@@ -54,3 +54,63 @@ Public IP: Used in WAN.
 Private IP: Used in LAN.
 NAT (Network Address Translation): Converts private IPs to public IPs for external communication.
 Azure VNet: Virtual networks in Azure for resource isolation and communication.
+
+Network Basics
+WAN (Wide Area Network): Connectivity to the internet, uses public IP addresses.
+LAN (Local Area Network): Private internal network, uses private IP addresses.
+Azure Virtual Network (VNet)
+Definition: A VNet is a private network in Azure, equivalent to a LAN in on-premises environments.
+Scope: VNets are region-specific (e.g., a VM in South India can't connect to a VNet in Central India directly).
+Address Pool: Defines the range of private IPs for the VNet.
+Subnets are created from this pool.
+Example: VNet with 10.0.0.0/16, Subnet1 with 10.0.0.0/24, Subnet2 with 10.0.1.0/24.
+Creating a VNet in Azure
+Go to Azure Portal: Search for "Virtual Network".
+
+Create a New VNet:
+
+Select your subscription.
+Create/select a resource group.
+Name your VNet (e.g., MyVNet).
+Choose a region (e.g., Central India).
+Define the IP address pool (e.g., 10.0.0.0/16).
+Rename the default subnet (e.g., VMSubnet).
+Add additional subnets (e.g., TestSubnet with a non-overlapping CIDR range).
+Review and Create: Finalize the settings and deploy the VNet.
+
+Virtual Machines in VNets
+Private IPs: Assigned from the subnet, default to dynamic but can be changed to static.
+Public IPs: Used for external communication, default to static.
+To change private IP allocation:
+Navigate to the VM's network interface card.
+Go to IP configuration settings.
+Change IP allocation from dynamic to static.
+Subnets and Communication
+Within the Same VNet:
+Communication between subnets in the same VNet is allowed by default.
+Azure manages routing with system-assigned routes.
+Between Different VNets:
+No communication by default.
+VNet Peering is required to enable communication.
+Testing Connectivity
+VM to VM (Same Subnet):
+Use private IPs for communication.
+VM to VM (Different Subnets, Same VNet):
+Allowed by default.
+Use RDP with private IP.
+Example: mstsc /v:<private-ip-of-vm>.
+Public IP and Internet Access
+If a VM's public IP is removed:
+The VM can still access the internet.
+A random public IP is assigned by Azure for outbound connections.
+This behavior is managed by the default VNet settings.
+Hands-On Example
+Create two VMs:
+VM1 in VMSubnet.
+VM2 in TestSubnet.
+Access:
+Take RDP to VM1 using its public IP.
+From VM1, take RDP to VM2 using its private IP.
+Test Internet:
+Open a browser on either VM and search "What is my IP?".
+Even without a public IP on the VM, it will show an outbound public IP assigned by Azure.
