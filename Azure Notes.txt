@@ -1,0 +1,56 @@
+Day 1: On-Premise Environment
+Challenges: High cost, maintenance (software/hardware), scalability issues, underutilization.
+Virtualization:
+Hypervisor software is required to create isolated VMs.
+Standalone virtualization risks downtime if the physical hardware fails.
+Private Cloud: Highly available clusters managed with tools like System Center, OpenStack, VMware vSphere, or Azure Stack.
+Day 2: Public Cloud
+Advantages:
+No CapEx, guaranteed scalability, no resource underutilization.
+Managed by cloud providers (AWS, Azure, IBM).
+Shared Responsibility Model: Security is a shared responsibility between the customer and the cloud provider.
+Azure Features:
+Pay-as-you-go, hybrid benefits for licensing, global regions for VM creation.
+Deployment models: IaaS, PaaS, SaaS.
+Day 3: Service Models
+IaaS: Provides VMs; user manages OS and runtime.
+PaaS: Platform for application development (e.g., App Services, SQL Database).
+SaaS: Fully managed applications (e.g., Office 365, Google Drive).
+Day 4: Azure Hierarchy and Identity
+Hierarchy: Subscription → Resource Groups → Resources.
+Tenancy: Azure Entra ID creates a tenant representing the organization.
+Subscription Types: Free Trial, Pay-as-you-go, Cloud Solution Partner, Student.
+Azure Policy: Used for governance, e.g., enabling Defender for Cloud for all subscriptions.
+Day 6-7: Azure CLI & PowerShell
+CLI Commands:
+az account list, az group create, az group delete, az vm create.
+PowerShell Commands:
+Get-AzSubscription, New-AzResourceGroup, New-AzVM.
+VM Connectivity:
+Windows VM: Connect via RDP.
+Linux VM: Use SSH tools like MobaXterm.
+Day 8-9: Azure Disks
+Types: OS Disk, Data Disk, Temporary Disk.
+Disk Operations: Add disks, change sizes (requires deallocation for OS disks).
+Snapshots: Create point-in-time copies for recovery.
+Availability Sets: Protect against planned maintenance and hardware failures.
+Day 11-14: Azure Storage
+Types: Blob, File, Table, Queue.
+Access Tiers: Hot, Cool, Archive (rehydration required for Archive).
+Replication: LRS, ZRS, GRS, RA-GRS, etc., based on redundancy needs.
+Migration: Use tools like AzCopy, Azure File Sync, Data Box for data migration.
+Day 15: Azure App Services and Containers
+App Services: Managed platform for web apps, deployment slots for testing.
+Containers:
+Create images locally with Docker and push to Azure Container Registry.
+Deploy images as Azure Container Instances or Kubernetes pods.
+Day 16: Networking
+IP Addressing:
+IPv4 (32-bit) and IPv6 (128-bit).
+Classes: A, B, C for network and host differentiation.
+Subnetting: Reduces IP wastage; enables private communication within defined ranges.
+Reserved IPs:
+Public IP: Used in WAN.
+Private IP: Used in LAN.
+NAT (Network Address Translation): Converts private IPs to public IPs for external communication.
+Azure VNet: Virtual networks in Azure for resource isolation and communication.
