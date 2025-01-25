@@ -114,3 +114,114 @@ From VM1, take RDP to VM2 using its private IP.
 Test Internet:
 Open a browser on either VM and search "What is my IP?".
 Even without a public IP on the VM, it will show an outbound public IP assigned by Azure.
+
+
+
+Notes on VNet-to-VNet Connectivity, DNS, and VPN in Azure
+1. VNet-to-VNet Connectivity Using Gateway Device
+Key Concepts:
+
+VNet Peering: Allows communication between resources in different VNets, connected over the Azure backbone. It requires non-overlapping address spaces.
+VNet-to-VNet using Gateway: Involves creating a secure, encrypted tunnel between two VNets over the internet.
+Steps:
+
+Create VNets:
+
+Go to Azure Portal > Virtual Networks and create two VNets in different regions (e.g., Central India and Central US).
+Make sure the address spaces are non-overlapping. For example, VNet 1 might have the address space 10.0.0.0/16 and VNet 2 10.1.0.0/16.
+Create Gateway Subnet:
+
+For VPN Gateway configuration, you need to create a Gateway Subnet in each VNet. This subnet should have a specific address range.
+Go to the Subnets section of your VNet and add a Gateway subnet. Azure reserves certain address ranges for this subnet.
+Deploy Virtual Network Gateways:
+
+Go to Virtual Network Gateway in Azure Portal and deploy a VPN Gateway.
+Choose the appropriate VPN type (Route-based or Policy-based). Ensure Active-Active mode is disabled.
+Set up the VPN tunnel to allow communication between the two VNets via the virtual network gateways.
+Create VNet Peering:
+
+Go to VNet Peering in the Azure Portal and create a peering connection between the two VNets, ensuring that both VNets can route traffic to each other.
+Set up bi-directional traffic and configure remote gateway for cross-region peering if needed.
+Testing:
+
+Create VMs in both VNets, one in Central India and one in Central US.
+Test connectivity using tools like ping, tracert, or PowerShell’s Test-NetConnection to verify VNet-to-VNet connectivity.
+2. VPN Connections
+Key Types:
+
+Site-to-Site VPN (S2S): This type of VPN connects your on-premises network to your Azure VNet. Typically, you need an on-premises VPN device that supports IPsec or IKEv2.
+Point-to-Site VPN (P2S): Used for individual devices (e.g., laptops or workstations) to securely connect to Azure. You’ll use a VPN client on the device to establish the connection.
+Steps:
+
+Site-to-Site (S2S) VPN:
+Configure VPN devices on both ends (on-premises and Azure) to establish a secure tunnel.
+In Azure, create a Virtual Network Gateway and configure the connection type (IPsec/IKEv2).
+Point-to-Site (P2S) VPN:
+Set up a VPN client on the individual device that you want to connect to Azure.
+The VPN client will authenticate using certificates and establish a secure connection to Azure.
+3. DNS Configuration
+Key Concepts:
+
+DNS (Domain Name System): Translates domain names (e.g., example.com) into IP addresses, allowing users and devices to access websites or services using human-readable addresses.
+Azure DNS: Azure provides both Public DNS for global internet traffic and Private DNS for internal Azure VNet communication.
+Public DNS Configuration:
+
+Create DNS Zone in Azure:
+
+In Azure Portal, go to DNS Zones and create a new DNS zone (e.g., example.com).
+Create A Record in Azure DNS:
+
+In the created DNS zone, add an A record that maps a hostname (e.g., www) to the public IP address of your Azure VM.
+Update DNS Records in GoDaddy:
+
+Log into GoDaddy and go to the DNS settings for your domain.
+Update the nameservers to point to Azure’s DNS servers (you can find Azure's nameservers in the Azure DNS Zone properties).
+Private DNS Configuration:
+
+Create Private DNS Zone:
+In Azure, create a Private DNS Zone for internal DNS resolution (e.g., internal.example.com).
+Link DNS Zone to VNet:
+In the DNS zone, go to Virtual Network Links and link the zone to the appropriate VNets for internal resolution.
+NSLookup Testing:
+From a VM in the linked VNet, use nslookup to verify that the VM can resolve names from the private DNS zone.
+Example: nslookup indvm.simplykloud.com will resolve to the private IP of indvm.
+4. IIS Web Server Installation on VM
+Steps:
+
+Install IIS on Windows VM:
+Log into the Windows VM.
+Run the following PowerShell command to install the IIS Web Server:
+powershell
+Copy
+Install-WindowsFeature -Name Web-Server -IncludeManagementTools
+Configure Network Security Group (NSG):
+Ensure that the NSG associated with the VM allows inbound HTTP traffic (port 80).
+Test Web Server:
+Open a browser and access the VM’s public IP to confirm IIS is up and running.
+You should see the default IIS landing page.
+5. Configuring A Record in GoDaddy (DNS)
+Login to GoDaddy:
+Go to GoDaddy and log into your account.
+Create an A Record:
+Navigate to DNS Management for your domain.
+Add an A record that points to the public IP address of the VM running the IIS Web Server.
+Update Name Servers:
+In GoDaddy, update the Name Servers for your domain to those provided by Azure DNS.
+Summary Checklist for Setting Up VNet Peering and VPN:
+VNet Peering:
+
+Ensure VNets have non-overlapping address spaces.
+Set up peering connections and routes between VNets.
+Gateway Subnets:
+
+Add a gateway subnet to each VNet.
+VPN Gateways:
+
+Deploy VPN gateways and create connections.
+DNS Configuration:
+
+Create public and/or private DNS zones.
+Set up necessary A records and link them to VNets.
+IIS Installation:
+
+Install IIS on a VM and verify by accessing via HTTP.
