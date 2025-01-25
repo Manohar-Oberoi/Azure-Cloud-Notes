@@ -225,3 +225,90 @@ Set up necessary A records and link them to VNets.
 IIS Installation:
 
 Install IIS on a VM and verify by accessing via HTTP.
+
+
+Network Security Groups (NSG), Route Tables, and Bastion in Azure
+1. Network Security Group (NSG)
+Key Concepts:
+
+Network Security Group (NSG) is a fundamental component in Azure’s security architecture that acts as a traffic filter to control inbound and outbound traffic to and from Azure resources.
+NSGs can be applied to both:
+Subnets: Controls traffic flow at the subnet level.
+Network Interface Cards (NICs): Controls traffic flow at the individual VM level.
+Key Features:
+
+Inbound and Outbound Rules: NSGs define access rules that either allow or deny traffic based on specific criteria like source, destination, ports, protocols, and priority.
+Traffic Filtering: NSGs use ACLs (Access Control Lists) to control network traffic to/from resources within a VNet or between VNets.
+Important Components:
+
+Source and Destination: You can specify where the traffic is coming from (source) and where it's going (destination), for example, IP address, subnet, or tag.
+Port and Protocol: You can specify which ports (e.g., HTTP – 80, HTTPS – 443) and which protocols (TCP, UDP) the traffic should use.
+Priority: Rules are evaluated in priority order (lower numbers have higher priority). If two rules overlap, the one with the lower priority is applied.
+Action: Defines what to do with the traffic. It can either be Allow or Deny.
+Example Usage:
+
+Inbound Rule: Allow traffic from any source on port 80 (HTTP) to a web server.
+Outbound Rule: Deny traffic from the subnet to the internet.
+Steps to Create NSG:
+
+Go to the Azure Portal.
+Navigate to Network Security Groups.
+Click Create and configure the NSG.
+Add Inbound and Outbound rules based on your needs, defining ports, protocols, and source/destination.
+Associate the NSG with the desired Subnet or Network Interface of your VM.
+Block Traffic Between Subnets in the Same VNet:
+
+You can block traffic between subnets in the same VNet by creating a Deny rule in the NSG of the subnets to control communication between them.
+2. Route Table
+Key Concepts:
+
+Routing in Azure is handled by Route Tables. By default, Azure automatically provides system routes for intra-VNet communication, but you can define User-Defined Routes (UDRs) to customize routing within your network.
+UDRs (User Defined Routes) are custom routes created to manage the flow of traffic between subnets, VNets, and even on-premises networks.
+Types of Routes:
+
+System Routes: These are automatically created by Azure, allowing connectivity between VMs in the same VNet and between VNets.
+User-Defined Routes (UDRs): You can create custom routes for specific network traffic, such as routing traffic through a Network Virtual Appliance (e.g., firewall) or using Azure VPN Gateway.
+Routing Example:
+
+A Route Table can be created to direct all outbound traffic from a subnet to a Firewall or Network Virtual Appliance (NVA).
+You might have a custom route like:
+Destination: 0.0.0.0/0 (default route for all traffic)
+Next Hop: IP address of the Firewall or NVA.
+Steps to Create a Route Table:
+
+Go to the Azure Portal and navigate to Route Tables.
+Click Create and configure the route table with the desired routes.
+Associate the route table with specific Subnets or VNets as needed.
+3. Azure Bastion
+Key Concepts:
+
+Azure Bastion is a fully managed Platform-as-a-Service (PaaS) offering that allows secure and seamless RDP/SSH access to Azure Virtual Machines without requiring a public IP address.
+Bastion provides a jump server functionality, enabling users to connect to their VMs over SSL (HTTPS), protecting the VM from the direct exposure of the internet.
+Benefits:
+
+Secure Remote Access: Bastion uses SSL to securely connect to Azure VMs without requiring public IP addresses, reducing the attack surface.
+No Exposure to Public Internet: VMs in private subnets don’t need a public IP, as Bastion acts as a gateway for accessing those resources.
+Easy to Use: You can access VMs directly from the Azure Portal.
+Steps to Set Up Azure Bastion:
+
+Go to the Azure Portal and navigate to Bastion.
+Click Create and choose the VNet where the Bastion service will be deployed.
+Create a Bastion subnet (AzureBastionSubnet) in your VNet, which is required for Bastion to work.
+Deploy Bastion into the subnet and configure necessary permissions.
+Once Bastion is deployed, you can access your VM by selecting the Connect button in the Azure Portal, and then choosing Bastion for RDP/SSH access.
+Summary: Key Concepts
+Network Security Groups (NSG):
+
+Controls inbound and outbound traffic at the VM NIC or Subnet level.
+Allows you to define rules based on source/destination, ports, protocols, and priorities.
+Can be used to block traffic between subnets in the same VNet.
+Route Tables:
+
+Defines routing behavior within Azure.
+System routes are automatically provided, but you can create User Defined Routes (UDRs) for specific needs (e.g., traffic redirection to a firewall).
+Azure Bastion:
+
+Securely connects to VMs using RDP or SSH via the Azure Portal.
+No need for public IP addresses on VMs.
+Acts as a jump server, reducing exposure to the public internet.
+These services together provide robust security and connectivity control within Azure. By leveraging NSGs for traffic filtering, Route Tables for custom routing, and Azure Bastion for secure remote access, you can ensure that your Azure environment is secure and efficiently managed
