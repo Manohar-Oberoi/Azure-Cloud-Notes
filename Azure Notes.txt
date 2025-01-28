@@ -312,3 +312,440 @@ Securely connects to VMs using RDP or SSH via the Azure Portal.
 No need for public IP addresses on VMs.
 Acts as a jump server, reducing exposure to the public internet.
 These services together provide robust security and connectivity control within Azure. By leveraging NSGs for traffic filtering, Route Tables for custom routing, and Azure Bastion for secure remote access, you can ensure that your Azure environment is secure and efficiently managed
+
+
+1. Network Security Group (NSG)
+Definition: A Network Security Group (NSG) allows you to control network traffic to and from Azure resources in a virtual network.
+
+Traffic Control: NSGs provide access control at the subnet level or network interface card (NIC) level, which helps in filtering network traffic.
+
+Rules:
+
+Inbound Rules: Controls incoming traffic.
+Outbound Rules: Controls outgoing traffic.
+Source and Destination: Define where the traffic is coming from (source) and where it is going (destination).
+Ports and Protocols: Specify the allowed ports (e.g., HTTP, RDP) and protocols (e.g., TCP, UDP).
+Priority and Actions: Each rule has a priority (lower number means higher priority), and actions can either be Allow or Deny.
+Steps to create NSG:
+
+Navigate to the Azure portal.
+Go to Network Security Groups and create a new NSG.
+Define inbound and outbound rules specifying source, destination, ports, and protocols.
+Associate the NSG with a subnet or NIC.
+Blocking Traffic Between Subnets in the Same VNet:
+
+Create rules that deny traffic between subnets within the same Virtual Network (VNet) if required for security.
+2. Route Table
+Routing in Azure: By default, Azure provides routing between VNets to enable communication between resources.
+User Defined Routes (UDR): Custom routes can be created to override the default routing.
+UDR Use Cases:
+Direct traffic through a firewall or other network appliances.
+Set specific paths for network traffic (e.g., routing traffic via a specific VNet or subnet).
+3. Firewall
+Traffic Control Device: A firewall in Azure helps filter traffic and enhance security for resources.
+Capabilities: Firewalls have advanced features compared to basic NSGs, such as:
+Network-level filtering
+Stateful packet inspection
+Application-level filtering
+4. Bastion
+Remote Access: Azure Bastion is a fully managed service that allows you to securely connect to virtual machines (VMs) via RDP or SSH without exposing them to the public internet.
+Benefits:
+No need for a public IP on VMs.
+Secure, browser-based remote access.
+Eliminates the need for managing jump boxes.
+5. Steps to Set Up VNet, Bastion, and Firewall:
+Create a VNet: Set up a virtual network in Azure to contain your resources.
+Deploy Bastion: Deploy Azure Bastion within the VNet to provide secure RDP/SSH connectivity to VMs.
+Deploy Firewall: Configure the Azure Firewall to manage and filter traffic between different subnets or VNets, if needed.
+
+
+
+1. Hub & Spoke Architecture
+Definition: A Hub & Spoke architecture is a network topology used in Azure where:
+The Hub VNet acts as the central point, connecting to various Spoke VNets.
+The Hub typically contains shared resources like firewall and Bastion for secure access and traffic management.
+The Spokes host specific workloads like VMs or applications, which communicate with each other via the Hub.
+2. Steps to Set Up Hub & Spoke Architecture:
+Create Hub VNet:
+
+Set up a VNet that will act as the Hub. This VNet will host services like Azure Bastion and Firewall.
+Deploy Azure Bastion and Firewall in Hub VNet:
+
+Azure Bastion: Deploy Bastion in the Hub VNet to allow secure RDP/SSH access to VMs in both Hub and Spoke VNets without exposing them to the public internet.
+Azure Firewall: Deploy Azure Firewall in the Hub VNet to filter and control traffic between subnets and VNets.
+Create Spoke VNet:
+
+Set up a Spoke VNet, which will host your workloads like VMs. The Spoke VNet will communicate with the Hub VNet via peering.
+Launch a VM in the Spoke VNet:
+
+Create a VM in the Spoke VNet. You can install IIS Web Server on the VM to simulate a real-world application.
+Create VNet Peering between Hub and Spoke:
+
+VNet Peering allows communication between the Hub and Spoke VNets. You will need to set up peering between both VNets to allow traffic flow between them.
+Connect to the VM:
+
+Use Azure Bastion or RDP/SSH (if needed) to connect to the VM in the Spoke VNet.
+3. Route Tables and Traffic Control:
+Create and Configure a Route Table:
+
+In the Spoke VNet, create a route table to manage traffic flow between VNets.
+Associate the route table with the Spoke VM's subnet to define routing for traffic originating from VMs in the Spoke.
+Disassociate Public IP from the VM:
+
+To enhance security, disassociate the public IP from the VM in the Spoke VNet to prevent direct internet access.
+Add Route in the Route Table:
+
+Add a route to the route table for internal traffic that should be redirected to the Azure Firewall in the Hub VNet. This ensures that traffic generated within the VM (e.g., web traffic) is routed through the firewall for filtering and inspection.
+4. Firewall Rules:
+DNAT (Destination Network Address Translation) Rule:
+
+Create a DNAT rule in the Azure Firewall to allow inbound traffic to the VM in the Spoke VNet (e.g., from the internet to the IIS server).
+This rule will map public IP traffic to the private IP of the VM in the Spoke VNet.
+Application Rule:
+
+Define an Application Rule in the Azure Firewall to allow or deny traffic to specific applications or services (e.g., HTTP/HTTPS access to the IIS web server running on the Spoke VM).
+Summary of Architecture Components:
+Hub VNet: Contains shared services like Azure Bastion and Firewall.
+Spoke VNet: Hosts individual workloads (e.g., VMs, IIS server).
+Azure Bastion: Provides secure RDP/SSH access to VMs without exposing them to the internet.
+Azure Firewall: Filters and controls traffic between subnets/VNets.
+VNet Peering: Enables communication between Hub and Spoke VNets.
+Route Table: Manages traffic flow within and between VNets.
+DNAT Rule: Maps external traffic to internal resources.
+Application Rule: Defines application-level traffic rules in the firewall.
+
+
+Azure Load Balancer and Application Gateway Notes
+Azure Load Balancer
+Overview:
+
+Azure Load Balancer (ALB) is a high-availability service that evenly distributes inbound traffic across multiple virtual machines (VMs) in your backend pool, improving the performance and scalability of your applications.
+Traffic is distributed in a round-robin fashion to ensure an even load.
+Components of Azure Load Balancer:
+
+Frontend IP: The public IP (for external access) or private IP (for internal access) assigned to the load balancer.
+Backend Pool: Contains the VMs that will handle the traffic. The load balancer routes traffic to these VMs.
+Load Balancing Rule: Defines how traffic is routed to the backend pool from the frontend IP, including the protocols (e.g., HTTP, RDP) and ports.
+Health Probe: Checks the health of the VMs in the backend pool. If a VM is down, traffic is redirected to the healthy VMs.
+Types of Load Balancer:
+
+Public Load Balancer: Assigns a public IP address to distribute incoming internet traffic.
+Internal Load Balancer: Uses a private IP address and is typically used within a virtual network (VNet), without a public IP.
+Steps to Create a Load Balancer:
+
+Create Two VMs: Deploy two VMs and install IIS web server on both VMs. RDP and HTTP ports should be open to ensure traffic can be routed correctly.
+VM Setup: No need for public IPs on VMs; use private IPs for communication with the load balancer.
+Create a Load Balancer:
+Frontend IP: Define a frontend IP for the load balancer (either public or private depending on the type).
+Backend Pool: Add the two VMs to the backend pool.
+Load Balancing Rule: Set up the rule to forward traffic (e.g., HTTP on port 80) from the frontend to the backend pool.
+Health Probe: Configure the health probe to monitor the health of VMs in the backend pool (e.g., HTTP probe on port 80).
+Create Inbound NAT Rule: Allows direct access to individual VMs in the backend pool (useful for administrative access like RDP).
+Define NAT rules for RDP and HTTP access to the VMs.
+Create Outbound Rule: Allow the VMs in the backend pool to access the internet (e.g., for software updates).
+Troubleshooting NIC Issues:
+
+If you want to add a VM from a different VNet to the backend pool, you may run into an issue where the VNet option is grayed out when attaching a new NIC to the VM. This typically happens because a VM can only have NICs from the same VNet.
+Workaround: To add a NIC from another VNet, deallocate the VM, and ensure that both VNets are peered. You may also need to ensure that the new NIC is created in the same VNet.
+Limitations with Load Balancer:
+
+Web Applications: Azure Load Balancer cannot handle web apps in its backend pool. For web applications, you need to use an Azure Application Gateway, which is better suited for Layer 7 services (HTTP/S traffic).
+SSL Offload: Load Balancer does not perform SSL offloading, which means SSL certificates have to be managed on the VMs themselves.
+Azure Application Gateway
+Overview:
+
+The Azure Application Gateway is a Layer 7 load balancer designed to handle HTTP/HTTPS traffic and provides more advanced features like SSL offloading, path-based routing, and web application firewall (WAF) capabilities.
+Application Gateway is ideal for web-based applications, unlike the Load Balancer, which operates at Layer 4 (TCP/UDP).
+Key Features of Application Gateway:
+
+Multiple Website Hosting: The Application Gateway can host multiple web applications behind a single frontend IP, with routing based on different URL paths.
+Path-Based Routing: Route traffic based on URL paths. For example, traffic to /app1 can be forwarded to one backend pool, and /app2 can go to another.
+SSL Offload: SSL termination is handled at the gateway, offloading the decryption process from backend VMs and improving performance.
+Web Application Firewall (WAF): Protects your web apps from common vulnerabilities (e.g., SQL injection, cross-site scripting). It can be enabled as a feature of the Application Gateway.
+When to Use Application Gateway:
+
+You need advanced routing capabilities based on URL paths or host headers.
+SSL offloading or termination is required for better performance.
+You need to protect your web apps from security vulnerabilities using WAF.
+Summary:
+Azure Load Balancer: Best for distributing traffic among VMs at the transport layer (TCP/UDP). It's simple, cost-effective, and ideal for internal workloads. However, it can't manage HTTP traffic or SSL offloading.
+Azure Application Gateway: Ideal for handling HTTP/HTTPS traffic with advanced features like SSL offloading, path-based routing, and WAF. It is suited for web applications.
+
+
+Azure Traffic Manager
+Overview:
+
+Azure Traffic Manager is a DNS-based load balancer that helps route traffic to the closest available endpoint, optimizing the user experience by directing requests to the best-performing or closest service instance.
+It operates at DNS level, allowing you to distribute traffic based on DNS queries.
+Traffic Routing Methods:
+
+Priority Routing Method: Directs traffic to a primary endpoint unless it’s unavailable, in which case it sends traffic to secondary endpoints based on priority levels.
+Weighted Routing Method: Distributes traffic based on predefined weights across different endpoints (e.g., 70% to one endpoint, 30% to another).
+Geographic Routing Method: Routes traffic based on the geographic location of the incoming request. This ensures that users are directed to the nearest (or specific) regional endpoint.
+Subnet Routing Method: Routes traffic based on the source subnet. Useful when you want traffic from specific regions or subnets to go to a particular endpoint.
+Multi-Value Routing Method: Returns multiple healthy endpoints in response to a DNS query. Clients are typically expected to choose one from the list, improving availability.
+Performance Routing Method: Routes traffic based on the lowest network latency to the closest endpoint, ensuring better performance for users by selecting the best endpoint for them.
+Example: Create 2 Azure Web Apps:
+
+One in Central India and another in Central US.
+Use Azure Traffic Manager to route traffic to the web app closest to the user based on the chosen routing method (e.g., performance or geographic).
+Azure Front Door
+Overview:
+
+Azure Front Door is a global, scalable entry point for web applications, offering features like intelligent load balancing, SSL offloading, and application acceleration.
+Front Door operates at Layer 7 (HTTP/HTTPS), providing routing based on URLs, HTTP headers, and more, while offering enhanced security with WAF and DDoS protection.
+Difference Between Load Balancer, Application Gateway, Traffic Manager, and Front Door:
+
+Load Balancer: Operates at Layer 4 (TCP/UDP). Best for internal traffic or VM-level load balancing.
+Application Gateway: Operates at Layer 7 and is used for web applications with advanced routing, SSL offloading, and Web Application Firewall (WAF).
+Traffic Manager: A DNS-based load balancer that routes traffic across multiple endpoints globally using DNS queries.
+Front Door: A global application delivery network at Layer 7 that offers SSL offloading, URL-based routing, global load balancing, and DDoS protection.
+Azure ExpressRoute
+Overview:
+
+ExpressRoute provides a private, dedicated connection between your on-premises network and Azure data centers. It bypasses the public internet, offering better reliability, speed, and security for critical workloads.
+It’s especially useful for businesses that need to connect to Azure with high performance and low latency.
+Components of ExpressRoute:
+
+Customer Network: The on-premises network of the customer that connects to Azure.
+Partner Edge: The service provider’s edge network, which acts as the intermediary between the customer’s on-prem network and Azure.
+ExpressRoute Circuit: A private connection from the customer's network to Microsoft’s network. It can be provisioned through a service provider, and it connects to the Azure data center.
+Microsoft Edge: The entry point where ExpressRoute connects to the Azure network.
+Steps to Create an ExpressRoute:
+
+Start Provisioning: Begin provisioning with your ISP (Internet Service Provider) or through a supported network partner.
+Create Peering: Establish a connection between the customer’s on-prem network and Microsoft’s network via the partner’s edge.
+Create Connection: Once the peering is established, the connection between the customer’s network and Azure becomes active. This private connection is routed via the ExpressRoute circuit.
+Active Directory Domain Services (Entra ID)
+Overview:
+
+Entra ID (formerly known as Azure Active Directory Domain Services) is a cloud-based directory service that provides domain services such as domain join, group policy, and LDAP/NTLM authentication in Azure without needing on-premises Active Directory.
+Entra ID simplifies the process of managing users and groups in Azure, particularly for hybrid cloud environments.
+Features of Entra ID:
+
+Provides essential AD features in the cloud, eliminating the need for a domain controller to be hosted on-premises.
+It integrates with Azure Active Directory for identity management, allowing users to authenticate via Single Sign-On (SSO) across cloud and on-prem environments.
+Summary:
+Azure Traffic Manager is used to route DNS traffic based on various routing methods (priority, performance, geographic, etc.).
+Azure Front Door is a global application delivery network offering Layer 7 features, including SSL offloading and intelligent routing.
+Azure ExpressRoute provides a private, high-speed, and secure connection between on-premises networks and Azure, bypassing the public internet.
+Entra ID offers managed domain services in the cloud, making it easier to handle identity and authentication without on-premises domain controllers.
+
+
+
+
+Entra ID (Azure Active Directory)
+Overview of Entra ID:
+
+Entra ID is the cloud-based identity and access management solution from Azure. It enables you to manage user identities, sync on-premise AD with Azure, and provide secure access to resources.
+When a company signs up for Azure Entra ID, a tenant (also called a directory) is created. Each tenant is unique and is dedicated to that organization.
+You do not need to set up a Windows Server for identity management because Entra ID operates entirely in the cloud.
+On-premises user accounts can be synchronized with Azure Entra ID using Azure AD Connect for hybrid identity management.
+Creating and Configuring Active Directory Domain Services:
+
+Create a VM (DC01): Set up a virtual machine and promote it to a domain controller. This will be part of the Active Directory Domain Services (AD DS) setup.
+Add Active Directory Domain Services Role: Add the AD DS role through "Add Roles and Features."
+Promote to Domain Controller: Create a new forest with a domain name (e.g., cloudhub.biz) and set a password for the domain.
+After configuring, the server restarts to apply changes.
+Use Active Directory Users and Computers to create users and manage AD.
+Azure AD Connect & Cloud Sync:
+
+AD Connect Sync: This is used to synchronize on-prem AD with Azure Entra ID.
+Install the AD Connect agent on the on-prem server.
+Configure password writeback so changes in Entra ID (like password resets) are reflected back on-premises.
+Cloud Sync: Provides configuration via Azure portal, simplifying the sync process.
+Download and Install AD Connect Agent: Configure and install the agent, entering admin credentials for the on-prem server.
+Directory Creation: In Azure, set up a custom domain (e.g., cloudhub.biz) and verify it by adding a TXT record to your domain registrar.
+Sync Process:
+
+The Azure AD Connect sync process is configured to sync all domains and organizational units (OUs) from on-prem AD to Azure Entra ID.
+Password Sync: After sync is completed, users can log into Azure using the same credentials as their on-prem AD accounts.
+After successful sync, Multi-Factor Authentication (MFA) might be prompted for new users.
+RBAC (Role-Based Access Control)
+Overview:
+
+RBAC is used to manage access to Azure resources. It determines who can access what resources, and at what level.
+Components of RBAC:
+
+Scope: Defines the level at which permissions are assigned. Scopes can be at:
+Subscription level
+Resource Group level
+Resource level
+Management Group level
+Security Principle: The entity that will receive access. It could be a:
+User
+Group
+Service Principal (application-level access)
+Role: The level of access assigned (e.g., Owner, Contributor, Reader).
+Owner: Can delegate permissions to other users.
+Contributor: Can modify resources but cannot delegate permissions.
+Reader: Can only view resources but cannot modify them.
+Role Assignment:
+
+Example: You can assign a Reader role to a user to view a resource group but not make changes.
+Role Assignment Verification: To ensure a user has the right permissions, you can go to the resource and check under Access Control (IAM) for the roles assigned.
+Reverse Sync:
+
+Entra ID users can be synced to on-prem via AD Connect Cloud Sync. It is a two-way sync, allowing changes to propagate in both directions.
+Multi-Factor Authentication (MFA) & Self-Service Password Reset (SSPR)
+MFA Configuration:
+
+Entra ID enforces MFA to improve security, requiring users to authenticate using at least two methods (e.g., password + phone).
+Microsoft Authenticator: A commonly used app for MFA. It can be used for app-based authentication or push notifications.
+SSPR (Self-Service Password Reset):
+
+SSPR allows users to reset their own passwords without contacting the helpdesk.
+To enable SSPR, navigate to Entra ID > Security > Password Reset.
+Bulk Operations: You can bulk-create, bulk-invite, or bulk-delete users via CSV files for ease of management.
+Device Join:
+
+Devices (e.g., laptops) can be joined to Entra ID, enabling users to authenticate using their Entra ID account.
+BitLocker Recovery Keys can be stored in Entra ID, allowing easy retrieval and management of encrypted devices.
+Mobile Device Management (MDM) can be integrated with tools like Intune to manage devices (requires Windows 10 or above).
+Azure Policy
+Overview:
+
+Azure Policy allows you to enforce rules and regulations across Azure resources, helping you maintain governance.
+Policies can be applied at the subscription, resource group, resource, or management group level.
+Example Use Cases:
+
+Control VM Creation Without Public IP: You can enforce a policy that restricts the creation of virtual machines without a public IP.
+Allowed VM Sizes: You can limit the size of virtual machines that can be created in your environment by assigning an allowed virtual machine size SKU policy.
+Assign Policies:
+
+Navigate to the Assignment Tab in the Azure portal to assign and enforce policies.
+Define the scope and parameters for the policy and apply it.
+Summary of Key Concepts
+Entra ID:
+
+Cloud-based directory service.
+Sync on-prem AD with Azure.
+Entra ID Connect Sync and Cloud Sync for hybrid environments.
+RBAC:
+
+Controls access to Azure resources based on who, what, and where.
+Users can be assigned roles with specific permissions at various levels.
+MFA & SSPR:
+
+Enhances security with Multi-Factor Authentication.
+Self-Service Password Reset (SSPR) enables users to reset their passwords independently.
+Device Join:
+
+Allows devices to be joined to Entra ID for seamless authentication and device management.
+Azure Policy:
+
+Enforces governance and controls over Azure resources, such as limiting VM sizes or ensuring security best practices.
+These concepts are foundational for managing identity, access, and security in Azure, making it easier to control resources and maintain a secure environment.
+
+
+
+Azure Monitor
+Azure Monitor is a service that provides comprehensive monitoring for Azure resources, including collecting and analyzing telemetry data, performance metrics, logs, and alerts.
+
+Azure Monitor Metrics:
+
+Provides point-in-time data about resources.
+You can view metrics in a 2-dimensional graph (e.g., CPU usage, memory).
+Example:
+Go to Azure Monitor > Metrics.
+Select a scope (e.g., subscription, resource group, or resource).
+Select the service you want to monitor.
+Choose a metric (e.g., available memory, percentage CPU).
+Define the time range (e.g., last 30 minutes).
+Activity Logs:
+
+Tracks changes or actions performed on resources (e.g., start/stop VM).
+You can filter by:
+Subscription.
+Timespan (e.g., last week).
+Who initiated the event.
+When the event occurred.
+You can check activity logs at the resource level, for example, by navigating to the Activity Logs tab in a VM.
+Logs (Log Analytics Workspace):
+
+Logs are stored in Log Analytics Workspaces.
+Example: For a Storage Account, enable diagnostic settings to capture data:
+Go to Storage Account > Monitoring > Diagnostic Settings.
+Enable categories such as Storage Read, Write, Delete.
+Send the logs to a Log Analytics Workspace.
+Kusto Query Language (KQL):
+
+Used to query and analyze log data.
+Example: In Log Analytics Workspace, use KQL to retrieve and analyze logs from a Storage Account.
+Insights:
+
+Insights provides a view of metrics and logs to offer detailed insights into resource performance.
+For Virtual Machines: Enable Insights for monitoring VM performance.
+Go to the VM > Monitoring > Insights, then enable Insights.
+Create and configure Collection Rules (e.g., for performance metrics).
+Alerts:
+
+You can set up alerts to get notified about resource changes or conditions.
+Go to Azure Monitor > Alerts.
+Create an Alert Rule based on activity logs or metrics.
+Example: Set up an alert for when a VM is deallocated.
+You can configure email notifications and other actions when the alert is triggered.
+Third-Party Monitoring Tools:
+
+Azure Monitor integrates with third-party tools like Grafana and Helix for enhanced monitoring and visualizations.
+Workbooks: Provides pre-configured visualizations and reports for monitoring metrics.
+Azure Backup
+Azure Backup is a service to back up your data, applications, and virtual machines to the cloud.
+
+Backup Center:
+
+Backup Center provides a centralized location to manage all aspects of backup operations in Azure.
+Recovery Services Vault (RSV):
+
+A Recovery Services Vault (RSV) is used to store backups and configuration data.
+You can use RSV for VM backups and disaster recovery.
+Backup Configuration:
+
+To back up a VM:
+Go to Backup Center > Add a Backup.
+Create a Recovery Services Vault and configure it for backup.
+Select the VM, configure backup policies, and enable backup.
+Protect On-Prem Resources:
+
+To back up on-premises resources, download the MARS Agent.
+This agent enables you to back up on-premise servers to Azure.
+Site Recovery:
+
+Site Recovery allows you to replicate your VM to a secondary region for disaster recovery.
+Example: Replicate a VM from Central India to South India by placing the RSV in South India.
+Job Preparation
+Preparing for a job in Azure requires a combination of technical expertise and effective resume/portfolio building.
+
+Microsoft Learn & Practice:
+
+Utilize Microsoft Learn and practice questions from platforms like Udemy, Examtopics, and Exam4Training for exam preparation.
+Updating Profiles:
+
+Update your resume and LinkedIn profile with Azure-related skills and experience.
+On platforms like Naukri, ensure that your profile highlights your Azure experience and technologies you've worked with.
+Be specific about how you got the opportunity to work with Azure and provide examples of real-world tasks you've performed.
+Job Preparation Tips:
+
+Review the Job Description (JD) before an interview.
+Tailor your preparation based on the job requirements.
+Be confident during interviews—if you don’t know a specific technology, admit it honestly and offer a willingness to learn.
+Technical Round:
+
+Prepare well for technical rounds by focusing on practical knowledge and real-world applications of Azure services.
+Demonstrate your problem-solving approach and Azure expertise in scenarios presented during the interview.
+Key Concepts Recap:
+Azure Monitor:
+
+Metrics, Activity Logs, and Insights for monitoring resources.
+Use KQL for querying log data and set up alerts for monitoring events and resource performance.
+Azure Backup:
+
+Backup VMs and on-prem resources using Recovery Services Vault and MARS Agent.
+Use Backup Center for centralized backup management and configure site recovery for disaster recovery scenarios.
+Job Preparation:
+
+Keep your resume and LinkedIn profile up to date with Azure skills.
+Use learning resources and practice exams to prepare for Azure certification exams.
+Review job requirements and tailor your interview preparation to align with the role you're applying for.
+These steps and tools will help you manage Azure resources effectively, protect data, and prepare for Azure-related job roles with confidence.
+
